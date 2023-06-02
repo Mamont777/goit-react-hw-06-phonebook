@@ -1,11 +1,29 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
 import { RiUserAddLine } from 'react-icons/ri';
 import { IoMdPersonAdd } from 'react-icons/io';
 import { BsFillTelephoneFill } from 'react-icons/bs';
+import { nanoid } from 'nanoid';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import css from './ContactForm.module.css';
+import { addContact, getContacts } from 'redux/contactsSlice';
 
-function ContactForm({ onSubmit }) {
+const notifyOptions = {
+  position: 'top-right',
+  autoClose: 5000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  progress: undefined,
+  theme: 'colored',
+};
+
+function ContactForm() {
+  const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
+
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
 
@@ -24,9 +42,24 @@ function ContactForm({ onSubmit }) {
     }
   };
 
+  const addContacts = contact => {
+    const existingContact = contacts.find(({ name }) => name === contact.name);
+
+    if (existingContact) {
+      toast.error(`${contact.name} is already in contacts`, notifyOptions);
+      return;
+    }
+    dispatch(addContact(contact));
+  };
+
   const handleSubmit = e => {
     e.preventDefault();
-    onSubmit({ name, number });
+    const contact = {
+      id: nanoid(10),
+      name,
+      number,
+    };
+    addContacts(contact);
     clearForm();
   };
 
@@ -74,9 +107,5 @@ function ContactForm({ onSubmit }) {
     </div>
   );
 }
-
-ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
 
 export default ContactForm;

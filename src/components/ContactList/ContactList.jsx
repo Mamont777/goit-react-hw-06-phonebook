@@ -1,12 +1,23 @@
-import PropTypes from 'prop-types';
 import { TiUserDeleteOutline } from 'react-icons/ti';
+import { useDispatch, useSelector } from 'react-redux';
 import css from './ContactList.module.css';
+import { getContacts, getFilter, removeContact } from 'redux/contactsSlice';
 
-function ContactList({ contacts, onDelete }) {
-  console.log(contacts);
+function ContactList() {
+  const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
+  const filter = useSelector(getFilter);
+
+  const getFilteredContacts = () => {
+    const normalizedFilter = filter.toLowerCase();
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(normalizedFilter)
+    );
+  };
+  const filteredContacts = getFilteredContacts();
   return (
     <ul className={css.contacts}>
-      {contacts.map(({ id, name, number }) => (
+      {filteredContacts.map(({ id, name, number }) => (
         <li key={id} className={css.contacts__item}>
           <p className={css.contacts__data}>
             <span>
@@ -15,7 +26,7 @@ function ContactList({ contacts, onDelete }) {
             <button
               type="button"
               className={css.btnDel}
-              onClick={() => onDelete(id)}
+              onClick={() => dispatch(removeContact(id))}
             >
               Delete
               <TiUserDeleteOutline size="16" className={css.icon} />
@@ -26,13 +37,5 @@ function ContactList({ contacts, onDelete }) {
     </ul>
   );
 }
-
-ContactList.propTypes = {
-  contacts: PropTypes.arrayOf(PropTypes.object),
-  onDelete: PropTypes.func.isRequired,
-};
-// ContactList.defaultProps = {
-//   contacts: [],
-// };
 
 export default ContactList;
